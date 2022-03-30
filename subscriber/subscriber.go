@@ -6,6 +6,13 @@ import (
 	"os/signal"
 	"time"
 
+	/*
+		Sarama es un libreria de cliente en go para
+		trabajar con apache kafka versiones 0.8 y
+		posteriores. Incluye una API de alto nivel
+		para producir y consumir mensajes facilmente,
+		y una API  de bajo nivel para controlar bytes
+	*/
 	"github.com/edpo1998/kafka/sarama"
 )
 
@@ -13,13 +20,17 @@ func main() {
 	fmt.Println("Starting synchronous Kafka subscriber...")
 	time.Sleep(5 * time.Second)
 
+	// Instancia hacia sarama para iniciar el proceso de configuracion del Consumer
 	config := sarama.NewConfig()
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	config.Consumer.Offsets.CommitInterval = 5 * time.Second
 	config.Consumer.Return.Errors = true
 
-	// Create new consumer
+	// Intermediario (middleware) entre el emisor y receptor
+	// en este caso sera Kafka
 	brokers := []string{brokerAddr()}
+
+	// Create new consumer
 	master, err := sarama.NewConsumer(brokers, config)
 	if err != nil {
 		panic(err)
@@ -50,12 +61,16 @@ func main() {
 	doneCh := make(chan struct{})
 	go func() {
 		for {
+
 			select {
+			// Error
 			case err := <-consumer.Errors():
 				fmt.Println(err)
+			// Se produjo un mensaje
 			case msg := <-consumer.Messages():
 				msgCount++
 				fmt.Println("Received messages", string(msg.Key), string(msg.Value))
+			// Se interrumpio el proceso del channel
 			case <-signals:
 				fmt.Println("Interrupt is detected")
 				doneCh <- struct{}{}
@@ -63,9 +78,14 @@ func main() {
 		}
 	}()
 
-	<-doneCh
-	fmt.Println("Processed", msgCount, "messages")
+	<-doneCh                                       // Final del canal
+	fmt.Println("Processed", msgCount, "messages") // Mensajes procesados
 }
+
+/*
+	Funciones para verificacion de variables de
+	entorno del broker y configuracion del topic
+*/
 
 func brokerAddr() string {
 	brokerAddr := os.Getenv("BROKER_ADDR")
