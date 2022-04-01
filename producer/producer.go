@@ -19,8 +19,11 @@ import (
 // Estructura del Objeto a recibir
 
 type Game struct {
-	Game_id int64 `json:"game_id"`
-	Players int64 `json:"players"`
+	Game_id    int64  `json:"game_id"`
+	Players    int64  `json:"players"`
+	Gamer_Name string `json:"gamer_name"`
+	Winner     int64  `json:"winner"`
+	Queue      string `json:"queue"`
 }
 
 // ToJSON to be used for marshalling of Book type
@@ -87,6 +90,9 @@ func main() {
 			game := new(Game)
 			game.Game_id = int64(msgCount)
 			game.Players = 10
+			game.Gamer_Name = "Random"
+			game.Winner = 2
+			game.Queue = "Kafka"
 
 			// Preparamos el mensaje
 			msg := &sarama.ProducerMessage{

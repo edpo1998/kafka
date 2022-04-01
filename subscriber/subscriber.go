@@ -17,6 +17,7 @@ import (
 )
 
 func main() {
+
 	fmt.Println("Starting synchronous Kafka subscriber...")
 	time.Sleep(5 * time.Second)
 
@@ -69,7 +70,9 @@ func main() {
 			// Se produjo un mensaje
 			case msg := <-consumer.Messages():
 				msgCount++
-				fmt.Println("Received messages", string(msg.Key), string(msg.Value))
+				//fmt.Println("Received messages", string(msg.Key), string(msg.Value))
+				//jsonResult:= string(msg.Value)
+				db.saveLogMongo(msg.Value)
 			// Se interrumpio el proceso del channel
 			case <-signals:
 				fmt.Println("Interrupt is detected")
