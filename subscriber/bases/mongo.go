@@ -1,4 +1,4 @@
-package db
+package bases
 
 import (
 	"context"
@@ -22,7 +22,7 @@ type Game struct {
 	Queue      string `json:"queue"`
 }
 
-func saveLogMongo(bjsonLog []byte) {
+func SaveLogMongo(bjsonLog []byte) {
 
 	// Get Struct Log
 	logsobj := Game{}
@@ -58,9 +58,5 @@ func saveLogMongo(bjsonLog []byte) {
 	} else {
 		fmt.Println("New data inserted")
 	}
-
-}
-
-func hellow() {
 
 }

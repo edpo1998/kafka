@@ -70,9 +70,9 @@ func main() {
 			// Se produjo un mensaje
 			case msg := <-consumer.Messages():
 				msgCount++
-				//fmt.Println("Received messages", string(msg.Key), string(msg.Value))
+				fmt.Println("Received messages", string(msg.Key), string(msg.Value))
 				//jsonResult:= string(msg.Value)
-				db.saveLogMongo(msg.Value)
+				//bases.SaveLogMongo(msg.Value)
 			// Se interrumpio el proceso del channel
 			case <-signals:
 				fmt.Println("Interrupt is detected")

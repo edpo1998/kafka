@@ -16,7 +16,33 @@ import (
 	"github.com/edpo1998/kafka/sarama"
 )
 
-// Estructura del Objeto a recibir
+func main() {
+
+	fmt.Println("Starting synchronous Kafka producer...")
+	time.Sleep(5 * time.Second)
+	// Creacion del canal
+	doneCh := make(chan struct{})
+
+	// Esta funcion genera mensajes cada 5 min.
+	go func() {
+		// Key del mensaje
+		msgCount := 0
+		for {
+			// Creamos un Objeto de prueba
+			msgCount++
+			game := new(Game)
+			game.Game_id = int64(msgCount)
+			game.Players = 10
+			game.Gamer_Name = "Random"
+			game.Winner = 2
+			game.Queue = "Kafka"
+			sendToKafka(game)
+			time.Sleep(5 * time.Second)
+		}
+	}()
+
+	<-doneCh // Final del canal
+}
 
 type Game struct {
 	Game_id    int64  `json:"game_id"`
@@ -26,7 +52,6 @@ type Game struct {
 	Queue      string `json:"queue"`
 }
 
-// ToJSON to be used for marshalling of Book type
 func (g Game) ToJSON() []byte {
 	ToJSON, err := json.Marshal(g)
 	if err != nil {
@@ -35,13 +60,23 @@ func (g Game) ToJSON() []byte {
 	return ToJSON
 }
 
-/*
-	Programa que nos permite realizar una emision hacia apache kafka
-*/
-func main() {
+func brokerAddr() string {
+	brokerAddr := os.Getenv("BROKER_ADDR")
+	if len(brokerAddr) == 0 {
+		brokerAddr = "localhost:9092"
+	}
+	return brokerAddr
+}
 
-	fmt.Println("Starting synchronous Kafka producer...")
-	time.Sleep(5 * time.Second)
+func topic() string {
+	topic := os.Getenv("TOPIC")
+	if len(topic) == 0 {
+		topic = "default-topic"
+	}
+	return topic
+}
+
+func sendToKafka(game *Game) {
 
 	// Instancia hacia sarama para iniciar el proceso de configuracion
 	config := sarama.NewConfig()
@@ -75,63 +110,19 @@ func main() {
 
 	// Variable para la configuracion de nuestros mensajes
 	topic := topic()
-	// Key del mensaje
-	msgCount := 0
 
-	// Creacion del canal
-	doneCh := make(chan struct{})
-
-	// Esta funcion genera mensajes cada 5 min.
-	go func() {
-		for {
-
-			// Creamos un Objeto de prueba
-			msgCount++
-			game := new(Game)
-			game.Game_id = int64(msgCount)
-			game.Players = 10
-			game.Gamer_Name = "Random"
-			game.Winner = 2
-			game.Queue = "Kafka"
-
-			// Preparamos el mensaje
-			msg := &sarama.ProducerMessage{
-				Topic: topic,
-				Value: sarama.StringEncoder(game.ToJSON()),
-			}
-
-			// Enviamos el mensaje
-			partition, offset, err := producer.SendMessage(msg)
-			if err != nil {
-				panic(err)
-			}
-
-			// Mensaje enviado al broker
-			fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topic, partition, offset)
-			time.Sleep(5 * time.Second)
-		}
-	}()
-
-	<-doneCh // Final del canal
-}
-
-/*
-	Funciones para verificacion de variables de
-	entorno del broker y configuracion del topic
-*/
-
-func brokerAddr() string {
-	brokerAddr := os.Getenv("BROKER_ADDR")
-	if len(brokerAddr) == 0 {
-		brokerAddr = "localhost:9092"
+	// Preparamos el mensaje
+	msg := &sarama.ProducerMessage{
+		Topic: topic,
+		Value: sarama.StringEncoder(game.ToJSON()),
 	}
-	return brokerAddr
-}
 
-func topic() string {
-	topic := os.Getenv("TOPIC")
-	if len(topic) == 0 {
-		topic = "default-topic"
+	// Enviamos el mensaje
+	partition, offset, err := producer.SendMessage(msg)
+	if err != nil {
+		panic(err)
 	}
-	return topic
+
+	// Mensaje enviado al broker
+	fmt.Printf("Message is stored in topic(%s)/partition(%d)/offset(%d)\n", topic, partition, offset)
 }
