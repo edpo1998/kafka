@@ -10,16 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var ADDRMONGO = "mongodb+srv://admin:1234@cluster0.fac6w.mongodb.net"
-var NAMEDB = "User"
-var NAMECOLL = "user"
+var ADDRMONGO = "mongodb://admindb:1234@35.208.184.236:27017"
+var NAMEDB = "fase2"
+var NAMECOLL = "fase2"
 
 type Game struct {
-	Game_id    int64  `json:"game_id"`
-	Players    int64  `json:"players"`
-	Gamer_Name string `json:"gamer_name"`
-	Winner     int64  `json:"winner"`
-	Queue      string `json:"queue"`
+	Juegoid        string `json:"juegoid"`
+	Cantjugadores  string `json:"cantjugadores"`
+	Nombrejuego    string `json:"nombrejuego"`
+	Jugadorganador int    `json:"jugadorganador"`
+	Queue_rabbit   string `json:"queue_rabbit"`
 }
 
 func SaveLogMongo(bjsonLog []byte) {
@@ -35,7 +35,7 @@ func SaveLogMongo(bjsonLog []byte) {
 	// Database connection
 	client, err := mongo.NewClient(options.Client().ApplyURI(ADDRMONGO))
 	if err != nil {
-		fmt.Println("Error de Conexion")
+		fmt.Println("Conection Failed Mongo Cluster")
 		return
 	}
 
@@ -44,7 +44,7 @@ func SaveLogMongo(bjsonLog []byte) {
 
 	err = client.Connect(ctx)
 	if err != nil {
-		fmt.Println("Error de Conexion")
+		fmt.Println("Failure Start Connect Client")
 		return
 	}
 	defer client.Disconnect(ctx)

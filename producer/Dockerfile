@@ -7,7 +7,7 @@ ENV SOURCES /go/src/github.com/PacktPublishing/Advanced-Cloud-Native-Go/Communic
 
 COPY . ${SOURCES}
 
-RUN cd ${SOURCES}producer/ && CGO_ENABLED=0 go build
+#RUN cd ${SOURCES}producer/ && CGO_ENABLED=0 go build
 
 ENV BROKER_ADDR localhost:9092
 
